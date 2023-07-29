@@ -1,56 +1,253 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      background: url('background.jpg') repeat center center fixed;
-      background-size: contain;
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>Babylon.js sample code</title>
+
+        <!-- Babylon.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+        <script src="https://assets.babylonjs.com/generated/Assets.js"></script>
+        <script src="https://cdn.babylonjs.com/recast.js"></script>
+        <script src="https://cdn.babylonjs.com/ammo.js"></script>
+        <script src="https://cdn.babylonjs.com/havok/HavokPhysics_umd.js"></script>
+        <script src="https://cdn.babylonjs.com/cannon.js"></script>
+        <script src="https://cdn.babylonjs.com/Oimo.js"></script>
+        <script src="https://cdn.babylonjs.com/earcut.min.js"></script>
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+        <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+        <script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+            
+            #canvasZone {
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+    </head>
+<body>
+    <div id="canvasZone"><canvas id="renderCanvas"></canvas></div>
+    <script>
+
+
+const url = `https://api.airtable.com/v0/appE6ShrgMW8Ca7CN/sectors`;
+
+const options = {
+  method: 'GET',
+  headers: {
+    'Authorization': `Bearer patZTUqRVC6kI7dU0.1075c6a1a2bba91edbd9c3a3793199371635b3093de254fbe4126e1824371f28`,
+    'Content-Type': 'application/json'
+  }
+};
+
+
+
+        var canvas = document.getElementById("renderCanvas");
+
+        var startRenderLoop = function (engine, canvas) {
+            engine.runRenderLoop(function () {
+                if (sceneToRender && sceneToRender.activeCamera) {
+                    sceneToRender.render();
+                }
+            });
+        }
+
+        var engine = null;
+        var scene = null;
+        var sceneToRender = null;
+        var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
+        //The PG is for testing WebXR controller input
+//Thanks for "https://www.babylonjs-playground.com/#F41V6N#134"
+
+
+
+var B = BABYLON; 
+var serverContentURL ="https://raw.githubusercontent.com/wlages/webxr-resources/main/docs/"
+
+var createScene = async function () {
+
+  //Create VR scene
+    var scene = new BABYLON.Scene(engine);
+    ConfigureScene(scene);
+    const xr = await scene.createDefaultXRExperienceAsync({});
+  var sun = CreateSun("sun",50,"textures/planets/sun.jpg",new BABYLON.Color3(0.87, 0.67, 0.34),scene);
+  sun.position = new B.Vector3(300,0,0);
+
+  CreateStation("models/stations/prafira/","prafira.obj","textures/babylonstation_JPG.jpg",scene);
+  
+    createPlanetLinks(scene);
+
+
+    xr.baseExperience.onStateChangedObservable.add((state) => {
+        xr.baseExperience.camera.position=new B.Vector3(0,5,0);
+    //    xr.baseExperience.camera.parent = station;
+    });
+
+    return scene;
+};
+
+function ConfigureScene(scene)
+{
+    scene.clearColor = new B.Color4(0.02, 0.02, 0.02, 1.0);
+    scene.imageProcessingConfiguration.contrast = 1.6;
+    scene.imageProcessingConfiguration.exposure = 0.6;
+    scene.imageProcessingConfiguration.toneMappingEnabled = true;
+    
+    //Adding an Arc Rotate Camera
+   var camera = new B.ArcRotateCamera("Camera", 0, 0.8, 100, BABYLON.Vector3.Zero(), scene);
+  camera.attachControl(canvas, false);
+  
+    var hdrTexture = B.CubeTexture.CreateFromPrefilteredData(serverContentURL+"textures/skybox/skyEnvHDR.dds", scene);
+   hdrTexture.gammaSpace = false;
+   scene.createDefaultSkybox(hdrTexture, true, 10000);
+
+}
+
+
+function CreateMaterial(name, file, scene) 
+{
+    var mat = new B.PBRMetallicRoughnessMaterial(name, scene);
+    mat.metallic = 1.0;
+    mat.roughness = 0.5;
+    mat.baseTexture = new B.Texture(file, scene);
+
+    if(mat.baseTexture == null)
+        console.log("errrr");
+    else
+        console.log(mat.baseTexture);
+
+    return mat;
+}
+function CreateSun(name,size,texture,color,scene)
+{
+    planet = B.MeshBuilder.CreateSphere(name, {diameter: size, segments: 32}, scene);
+    var material = new B.StandardMaterial(name+"_material", scene);
+    material.diffuseTexture = new B.Texture(serverContentURL+texture, scene);
+    material.emissiveColor = new BABYLON.Color3(1, 1, 1);
+    planet.material = material;
+    planet.position = new B.Vector3.Zero;
+
+    // Point Light
+    var light = new B.PointLight(name +"_light", new B.Vector3.Zero, scene);
+    light.diffuse = color;
+    light.specular = new BABYLON.Color3(1, 1, 1);
+    light.intensity = 200000.5;
+    light.parent = planet;
+
+    return planet;
+
+}
+
+function CreateStation(path,name,texture,scene)
+{
+
+        B.SceneLoader.ImportMesh("",serverContentURL+path, name, scene, function Loaded(meshes)
+        {
+            
+        console.log("Mesh loaded:", meshes);
+        const ring = meshes[0]; //scene.getMeshByName("mesh_mm1");
+      //  if(ring == null)
+        //    console.log("nao chei");
+            ring.scaling=new B.Vector3(0.10,0.10,0.10);
+       ring.material= CreateMaterial("ringMat",serverContentURL+texture,scene);
+        //ring.parent = planet;
+             });
+}
+
+function createButton(position,id,url,scene)
+{
+            console.log(id);
+            var buttonSize = 1; // Adjust the size of the button
+            var button = BABYLON.MeshBuilder.CreateSphere(id, {diameter: buttonSize, segments: 32}, scene);
+            button.position = position;
+    
+            var defaultMaterial = new BABYLON.StandardMaterial("defaultMaterial", scene);
+            defaultMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+            button.material = defaultMaterial;
+    
+            var hoverMaterial = new BABYLON.StandardMaterial("hoverMaterial", scene);
+            hoverMaterial.diffuseColor = new BABYLON.Color3(1, 1, 1);
+    
+            button.actionManager = new BABYLON.ActionManager(scene);
+            button.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, function() {
+                button.material = hoverMaterial;
+            }));
+            button.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, function() {
+                button.material = defaultMaterial;
+            }));
+            button.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function() {
+               window.location = url;
+                console.log("Button clicked!");
+            }));
+}
+
+function createPlanetLinks(scene)
+{
+  fetch(url, options)
+  .then(response => response.json())
+  .then(data => {
+    for (let i = 0; i < 25; i++) {
+      if(data.records[i]!=null)
+      {
+
+      const recordUrl = data.records[i].fields.URL;
+             
+      const sector = parseInt(data.records[i].fields.SectorID);
+      console.log(sector.toString());
+      createButton(new BABYLON.Vector3(10*Math.sin(sector*14.5),0,10*Math.cos(sector*14.5)), "button" + sector.toString(),"https://playground.babylonjs.com/full.html"+recordUrl,scene);
+
+      }
     }
-    svg {
-      height: 100%;
-      width: 100%;
-    }
-  </style>
-<body> 
-  <svg viewBox="0 0 1600 1065">
-0    <image href="andromeda-tile.png" x="0" y="0" height="1065" width="1600"/>
-    <a xlink:href="https://playground.babylonjs.com/full.html#9K3MRA#1281" ><rect x="0" y="0" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector2" ><rect x="320" y="0" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector3" ><rect x="640" y="0" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector4" ><rect x="960" y="0" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector5" ><rect x="1280" y="0" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-
-    <a xlink:href="https://example.com/sector6" ><rect x="0" y="213" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector7" ><rect x="320" y="213" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector8" ><rect x="640" y="213" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector9" ><rect x="960" y="213" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector10" ><rect x="1280" y="213" width="320" height="213" fill="transparent" stroke="transparent"/></a>
+  })
+  .catch(error => console.error(error));
+}
 
 
-    <a xlink:href="https://example.com/sector11" ><rect x="0" y="426" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector12" ><rect x="320" y="426" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector13" ><rect x="640" y="426" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector14" ><rect x="960" y="426" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector15" ><rect x="1280" y="426" width="320" height="213" fill="transparent" stroke="transparent"/></a>
+                window.initFunction = async function() {
+                    
+                    
+                    
+                    var asyncEngineCreation = async function() {
+                        try {
+                        return createDefaultEngine();
+                        } catch(e) {
+                        console.log("the available createEngine function failed. Creating the default engine instead");
+                        return createDefaultEngine();
+                        }
+                    }
 
+                    window.engine = await asyncEngineCreation();
+        if (!engine) throw 'engine should not be null.';
+        startRenderLoop(engine, canvas);
+        window.scene = createScene();};
+        initFunction().then(() => {scene.then(returnedScene => { sceneToRender = returnedScene; });
+                            
+        });
 
-    <a xlink:href="https://example.com/sector16" ><rect x="0" y="639" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector17" ><rect x="320" y="639" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector18" ><rect x="640" y="639" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector19" ><rect x="960" y="639" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector20" ><rect x="1280" y="639" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-
-    <!-- Repeat the pattern for all rows -->
-    <a xlink:href="https://example.com/sector21" ><rect x="0" y="852" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector22" ><rect x="320" y="852" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector23" ><rect x="640" y="852" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector24" ><rect x="960" y="852" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-    <a xlink:href="https://example.com/sector25" ><rect x="1280" y="852" width="320" height="213" fill="transparent" stroke="transparent"/></a>
-  </svg>
-  Hubble Space Telescope image of the Andromeda galaxy M31 (credit: NASA, ESA)
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+    </script>
 </body>
 </html>
+
