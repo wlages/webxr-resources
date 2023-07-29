@@ -12,5 +12,5 @@ newmtl _babylon_stationwire_224198087
 	Kd 0.878431 0.776471 0.341176
 	Ks 0.000000 0.000000 0.000000
 	Ke 0.000000 0.000000 0.000000
-	map_Ka station texture\babylonstation.tga
-	map_Kd station texture\babylonstation.tga
+	map_Ka station texture\babylonstation_JPG.jpg
+	map_Kd station texture\babylonstation_JPG.jpg
