@@ -1,7 +1,7 @@
 # 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
 # File Created: 09.12.2009 02:56:24
 
-mtllib babylon station.mtl
+mtllib babylon.mtl
 
 #
 # object Sphere01
