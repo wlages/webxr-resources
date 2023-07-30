@@ -8,12 +8,13 @@ plugins:
   - jekyll-remote-theme
 # END # TO USE JEKYLL LIBDOC LOCALLY AS REMOTE THEME
 
+#comment when publishing to github / uncomment when running local
 #host: 0.0.0.0
 
 
-title: Jekyll LibDoc as remote theme
+title: Building WebXR apps using Babylon.JS
 description: >- # Description of the docs. (>- means to ignore newlines until next param)
-  An example of a repository using Jekyll LibDoc as a remote theme
+  A Tutorial by Wallace Lages
 # IMPORTANT: on Github Pages deploys, url and baseurl must be commented or set to proper settings, otherwise links and resources URL are wrong
 # url: http://localhost # the base hostname & protocol for your site, e.g. http://example.com
 # baseurl: /Jekyll-LibDoc/_site # the subpath of your site, e.g. /blog
@@ -182,19 +183,22 @@ sidebar:
             title: Start # Link text
             order: 0 
         # Example URL
-        -   url: https://playground.babylonjs.com/#F41V6N#1339
-            title: Final
+        -   url: https://playground.babylonjs.com/
+            title: Babylon.JS Playground
             order: 500
-            category: Reference Projects
-        
+            category: Reference Links
+        -   url: https://doc.babylonjs.com/features/featuresDeepDive/webXR
+            title: Babylon.JS WebXR 
+            order: 500
+            category: Reference Links
 
 # BADGES
 # Feature that allows to display badges into the footer https://shields.io image html and url
 shields:
-    -   image_html: <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/olivier3lanc/LibDoc-remote-demo?logo=github&style=flat-square">
-        link_url: https://github.com/olivier3lanc/LibDoc-remote-demo
+    -   image_html: <img alt="GitHub Repo stars" src="https://img.shields.io/badge/wallacelages-8A2BE2">
+        link_url: https://wallacelages.com
     -   image_html: <img alt="no trackers, no cookies and no analytics" title="This website has no trackers, no cookies and no analytics. Only feedback is important :)" src="https://img.shields.io/badge/no%20trackers|cookies|analytics-Just%20feedback-green?style=flat-square">
-        link_url: 'mailto:olivier3lanc@gmail.com'
+        link_url: 'mailto:wallace.lages@gmail.com'
 
 # ASSETS
 # Settings for the assets layout

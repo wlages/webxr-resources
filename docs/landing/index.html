@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>Babylon.js sample code</title>
+
+        <!-- Babylon.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+        <script src="https://assets.babylonjs.com/generated/Assets.js"></script>
+        <script src="https://cdn.babylonjs.com/recast.js"></script>
+        <script src="https://cdn.babylonjs.com/ammo.js"></script>
+        <script src="https://cdn.babylonjs.com/havok/HavokPhysics_umd.js"></script>
+        <script src="https://cdn.babylonjs.com/cannon.js"></script>
+        <script src="https://cdn.babylonjs.com/Oimo.js"></script>
+        <script src="https://cdn.babylonjs.com/earcut.min.js"></script>
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+        <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+        <script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+            
+            #canvasZone {
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+    </head>
+<body>
+    <div id="canvasZone"><canvas id="renderCanvas"></canvas></div>
+    <script>
+
+ 
+        var canvas = document.getElementById("renderCanvas");
+
+        var startRenderLoop = function (engine, canvas) {
+            engine.runRenderLoop(function () {
+                if (sceneToRender && sceneToRender.activeCamera) {
+                    sceneToRender.render();
+                }
+            });
+        }
+
+        var engine = null;
+        var scene = null;
+        var sceneToRender = null;
+        var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
+
+//----------playground code
+
+var B = BABYLON; 
+var serverContentURL ="https://raw.githubusercontent.com/wlages/webxr-resources/main/docs/"
+var previousPos;
+
+var CreateScene = async function () 
+{
+    //Create VR scene
+    var scene = new B.Scene(engine);
+    ConfigureScene(scene);
+    const xr = await scene.createDefaultXRExperienceAsync({});
+    
+    var earth = CreatePlanet("earth",10,"textures/planets/earth.jpg",false,scene);
+    var sun = CreateStar("sun",50,"textures/planets/sun.jpg",new BABYLON.Color3(0.87, 0.67, 0.34),scene);
+    var moon = CreatePlanet("moon",5,"textures/planets/moon.jpg",true,scene);
+    var ship = new B.TransformNode("ship", scene);
+    ship.rotationQuaternion = new B.Quaternion.Identity; //required because it does not exist by default
+
+    //register the simulation method
+    scene.registerBeforeRender(StepSimulation (earth, moon,ship));
+ 
+    scene.activeCamera.rotationQuaternion = BABYLON.Quaternion.FromEulerVector(new BABYLON.Vector3(0,0,0));
+    scene.activeCamera.target = earth;
+
+    xr.baseExperience.onStateChangedObservable.add((state) => {
+        xr.baseExperience.camera.position=new B.Vector3.Zero;
+        xr.baseExperience.camera.parent = ship;
+    });
+
+    previousPos = new B.Vector3.Zero;
+
+    LeaveSystem(earth,scene);
+
+            //v1 = createLine();
+        //v2 = createLine();
+        //v3 = createLine();
+
+    return scene;
+};
+
+function ConfigureScene(scene)
+{
+    scene.clearColor = new B.Color4(0.02, 0.02, 0.02, 1.0);
+    scene.imageProcessingConfiguration.contrast = 1.6;
+    scene.imageProcessingConfiguration.exposure = 0.6;
+    scene.imageProcessingConfiguration.toneMappingEnabled = true;
+    
+    //Adding an Arc Rotate Camera
+   var camera = new B.ArcRotateCamera("Camera", 0, 0.8, 100, BABYLON.Vector3.Zero(), scene);
+  camera.attachControl(canvas, false);
+  
+    var hdrTexture = B.CubeTexture.CreateFromPrefilteredData(serverContentURL+"textures/skybox/skyEnvHDR.dds", scene);
+   hdrTexture.gammaSpace = false;
+   scene.createDefaultSkybox(hdrTexture, true, 10000);
+
+}
+
+
+function CreateMaterial(name, file, scene) 
+{
+    var mat = new B.PBRMetallicRoughnessMaterial(name, scene);
+    mat.metallic = 0;
+    mat.roughness = 1.0;
+    mat.baseTexture = new B.Texture(file, scene);
+
+    if(mat.baseTexture == null)
+        console.log("Could not find file!");
+    else
+        console.log("Loaded" + mat.baseTexture);
+
+    return mat;
+}
+
+function CreatePlanet(name,size,texture,hasRing,scene)
+{
+    const planet = B.MeshBuilder.CreateSphere(name, {diameter: size, segments: 32}, scene);
+    planet.material= CreateMaterial(name+"_material",serverContentURL+texture,scene);
+
+    if(hasRing)
+    {
+        B.SceneLoader.ImportMesh("",serverContentURL+"models/", "ring1.obj", scene, function Loaded(meshes){
+            
+        console.log("Mesh loaded:", meshes);
+        const ring = meshes[0];
+        if(ring == null)
+            console.log("Could not find file");
+        ring.scaling=new B.Vector3(10,10,10);
+        ring.material= CreateMaterial("ringMat",serverContentURL+"textures/planets/Saturn_Rings.png",scene);
+        ring.parent = planet;
+             });
+    }
+
+    return planet;
+}
+
+
+function CreateStar(name,size,texture,color,scene)
+{
+    star = B.MeshBuilder.CreateSphere(name, {diameter: size, segments: 32}, scene);
+    var material = new B.StandardMaterial(name+"_material", scene);
+    material.diffuseTexture = new B.Texture(serverContentURL+texture, scene);
+    material.emissiveColor = new BABYLON.Color3(1, 1, 1);
+    star.material = material;
+    star.position = new B.Vector3.Zero;
+
+    // Point Light
+    var light = new B.PointLight(name +"_light", new B.Vector3.Zero, scene);
+    light.diffuse = color;
+    light.specular = new BABYLON.Color3(1, 1, 1);
+    light.intensity = 2000000.5;
+    light.parent = star;
+
+    return star;
+
+}
+
+function StepSimulation(earth, moon, ship) 
+{
+    return function()
+    {
+        var t = performance.now(); // Current time in ms
+
+        //spin
+        earth.rotationQuaternion = B.Quaternion.RotationAxis(B.Vector3.UpReadOnly, t*0.0001);
+        moon.rotationQuaternion = B.Quaternion.RotationAxis(B.Vector3.UpReadOnly, t*0.001);
+
+        // Earth orbit
+        var er = 500;
+        var es = 0.0001;
+        earth.position = new B.Vector3(er*Math.cos(t*es), 0,er*Math.sin(t*es));
+
+        // Moon orbit
+        var mr = 30;
+        var ms = 0.001;
+        moon.position = new B.Vector3(mr*Math.cos(t*ms),0,  mr*Math.sin(t*ms));
+        moon.position = moon.position.addInPlace(earth.position);
+
+        MoveShip(earth, ship,t);
+    }
+}
+
+function MoveShip(earth, ship,t)
+{
+    // Ship orbit
+    var sr = 6.2;
+    var ss = 0.0002;
+    ship.position = new B.Vector3(sr*Math.cos(t*ss), 0,sr*Math.sin(t*ss));
+    ship.position = ship.position.addInPlace(earth.position);
+        
+    var gravityVector = earth.position.clone();
+    gravityVector.subtractInPlace(ship.position);
+
+    //t = (c_ship-c_earth)- (p_ship - p_earth)
+    var tangentVector = ship.position.clone();
+    tangentVector.subtractInPlace(previousPos);
+    tangentVector.subtractInPlace(earth.position);
+    tangentVector = B.Vector3.Normalize(tangentVector);
+    var shipRight = B.Vector3.Cross(tangentVector,gravityVector);
+
+    var downRotation =  B.Quaternion.RotationAxis(shipRight,t*ss);
+    var camRotation = B.Quaternion.RotationAxis(tangentVector,-Math.PI/2);
+     
+    ship.rotationQuaternion = camRotation.multiply(downRotation);
+    previousPos.copyFrom(ship.position.subtract(earth.position));
+
+     //drawLine(v1,ship.position,ship.position.add(shipRight));
+            //drawLine(v2,ship.position,ship.position.add(gravityVector));
+            //drawLine(v3,ship.position,ship.position.add(tangentVector));
+
+}
+
+function LeaveSystem(button,scene)
+{
+     button.actionManager = new BABYLON.ActionManager(scene);
+     button.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function() {
+               window.location = "https://wlages.github.io/galaxy/";
+
+    }));
+}
+
+
+function createLine()
+{
+    let myPoints = new Array(2);
+    myPoints[0] = new BABYLON.Vector3.Zero;
+    myPoints[1] = new BABYLON.Vector3.Zero;
+    const options = {
+        points: myPoints,
+        updatable: true
+    }
+
+    return options;
+}
+
+function drawLine (options, a,  b)
+{ 
+    options.points[0] = a;
+    options.points[1] = b
+    options.instance = BABYLON.MeshBuilder.CreateLines("lines", options);   
+}
+
+//-------------standard babylon
+                window.initFunction = async function() {
+                    
+                    
+                    
+                    var asyncEngineCreation = async function() {
+                        try {
+                        return createDefaultEngine();
+                        } catch(e) {
+                        console.log("the available createEngine function failed. Creating the default engine instead");
+                        return createDefaultEngine();
+                        }
+                    }
+
+                    window.engine = await asyncEngineCreation();
+        if (!engine) throw 'engine should not be null.';
+        startRenderLoop(engine, canvas);
+        window.scene = CreateScene();};
+        initFunction().then(() => {scene.then(returnedScene => { sceneToRender = returnedScene; });
+                            
+        });
+
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+    </script>
+</body>
+</html>
