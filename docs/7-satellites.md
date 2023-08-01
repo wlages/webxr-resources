@@ -28,4 +28,9 @@ var ship = new B.TransformNode("ship", scene);
 
 The last line initializes the rotation for the ship. 
 
+# Experiment
+
+As with the planets, play with different textures (you can use the ones for the planets) and sizes for the moon.
+
+
 Here is the [complete project for this step](https://playground.babylonjs.com/#EQHLXS#6).

@@ -50,4 +50,8 @@ Notice that for the colors we're using BABYLON instead of just B. This is becaus
 
 You will also note that the planet has disappeared. In fact, it is inside the sun because they were all created in the same location. If you zoom in with the scroll wheel on the Playground window in your PC you can peek inside and see the planet there.
 
+# Experiment
+
+Play with different light colors and size for the sun.
+
 Here is the [complete project for this step](https://playground.babylonjs.com/#EQHLXS#5).

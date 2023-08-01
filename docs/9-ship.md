@@ -9,6 +9,9 @@ order: 90
 
 # Moving the Ship
 
+
+>*Caution* you may find that this perspective very unusual and that  it can make you dizzy. If you feel too uncomfortable after you try, you can stop the ship from moving by removing call to MoveShip (last step).
+
 In this step we will move the ship around the earth. We want it to feel like a space station in orbit, so we will need to do a few thing differently than the moon.
 
 We will need to:
@@ -76,7 +79,9 @@ Finally, since we will update the position of the ship after the earth has moved
 MoveShip(earth, ship,t);
 ```
 
-*Caution* you may find that this perspective very unusual and that it can make you dizzy. If so, you can stop the ship from moving by removing this same line.
+# Experiment
+
+Play with the ship orbit radius (how far you are above surface), rotation speed (can you make it geosynchronous?)
 
 
 Here is the [complete project for this step](https://playground.babylonjs.com/#EQHLXS#7).

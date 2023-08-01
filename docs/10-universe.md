@@ -38,4 +38,8 @@ Before you leave to explore the galaxy, [add your planetary system here](https:/
 
 To leave the system, point with your controller to the ground and press trigger.
 
+# Explore
+
+Try other planetary sytems! Find out who is the creator and give some feedback!
+
 Here is the [complete project for this step](https://playground.babylonjs.com/#EQHLXS#9).
