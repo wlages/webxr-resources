@@ -45,14 +45,14 @@ Now we need to call the method "ConfigureScene" from the CreateScene, so that it
 
 There are a few skyboxes ready for you to test. Just replace the file name in the CubeTexture creation to the one you want:
 
--blue-greenEnvHDR.dds
--complexEnvHDR.dds
--fuzyEnvHDR.dds
--orangeEnvHDR.dds
--purpleEnvHDR.dds
--redEnvHDR.dds
--yellowEnvHDR.dds
--skyEnvHDR.dds
+- blue-greenEnvHDR.dds
+- complexEnvHDR.dds
+- fuzyEnvHDR.dds
+- orangeEnvHDR.dds
+- purpleEnvHDR.dds
+- redEnvHDR.dds
+- yellowEnvHDR.dds
+- skyEnvHDR.dds
 
 
 Here is the [complete project for this step](https://playground.babylonjs.com/#EQHLXS#2).
