@@ -55,15 +55,15 @@ We're creating a planet named 'earth', with size 10, using earth textures, and f
 Play with different scales, textures, and rings.
 
 Here are other textures you can try
--jupiter.jpg
--mars.jpg
--mercury.jpg
--neptune.jpg
--pluto.jpg
--saturn.jpg
--uranus.jpg
--venus.jpg
--uranus_rings.jpg
+- jupiter.jpg
+- mars.jpg
+- mercury.jpg
+- neptune.jpg
+- pluto.jpg
+- saturn.jpg
+- uranus.jpg
+- venus.jpg
+- uranus_rings.jpg
 
 
 Here is the [complete project for this step](https://playground.babylonjs.com/#EQHLXS#4).
