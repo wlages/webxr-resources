@@ -52,6 +52,9 @@ scene.registerBeforeRender(StepSimulation (earth, moon,ship));
 
 This lines registers the method with BabylonJS, so that it is called before every frame is rendered. Investigate the result in the PC and in the headset to make sure the orbits are working properly.
 
+>> If you are running in a smartphone and the earth and moon are very dark, you may need to switch the planet material creation from "CreateMaterial" to "CreateMaterialStandard" in the second line of "CreatePlanet" method.
+
+
 # Experiment
 
 Play with different rotation speeds, orbit radius, and translation speeds. You can also experiment different orbit planes by swapping the components in the position Vector3.

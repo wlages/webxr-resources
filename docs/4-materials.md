@@ -32,7 +32,36 @@ function CreateMaterial(name, file, scene)
 }
 
 ```
-We will use this method when we create planets.  
+
+The method above uses Physically Based Rendering (PBR) which aims to emulate real-life materials. The properties are controlled by adjusting the metallic and roughness component. A mirror would have metallic = 1 and roughness = 0, reflecting our skybox as a very polished metal. PBR creates very realistic materials, but can be unavailable in certain platforms. 
+
+Another option is to create a standard material. If you are running on a smartphone this may be a good option.
+
+```javascript
+function CreateMaterialStandard(name, file, scene) 
+{
+    var mat = new B.StandardMaterial(name+"_material", scene);
+    mat.diffuseTexture = new B.Texture(file, scene);
+    mat.ambientColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+
+    if(mat.baseTexture == null)
+        console.log("Could not find file!");
+    else
+        console.log("Loaded" + mat.baseTexture);
+
+    return mat;
+
+}
+
+```
+
+Ambient color will be used to light the areas which are not directly iluminated by the sun light. In order for this to work, we will need to add the line below "ConfigureScene", after the last "imageProcessingConfiguration" call:
+
+```javascript
+scene.ambientColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+```
+
+We will use one of these two method when we create planets.  
 
 
 Here is the [complete project for this step](https://playground.babylonjs.com/#EQHLXS#3).

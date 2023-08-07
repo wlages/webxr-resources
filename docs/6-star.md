@@ -39,6 +39,8 @@ function CreateStar(name,size,texture,color,scene)
 
 ```
 
+There are two colors with fixed values in this method. The first one sets the start material emmissive color and the second the light specular color. The specular is set to (1,1,1) which is OK if you are using the PBRMaterial. If you are using the StandarMaterial and there is bright spot on your planets, you might want to reduce it closer to (0,0,0).
+
 Now we need to call the method "CreateStar" from the CreateScene, so that it works. Modify your createScene to insert the line below after the line creating the earth.
 
 ```javascript

@@ -84,4 +84,4 @@ MoveShip(earth, ship,t);
 Play with the ship orbit radius (how far you are above surface), rotation speed (can you make it geosynchronous?)
 
 
-Here is the [complete project for this step](https://playground.babylonjs.com/#EQHLXS#7).
+Here is the [complete project for this step](https://playground.babylonjs.com/#EQHLXS#8).
